@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jmdavril/pubsub/pkg/pubsub"
+	"github.com/jmdavril/pubsub"
 	"log"
 )
 
@@ -50,4 +50,3 @@ func (s service2) startSubscription() {
 	}
 	s.register.Subscribe(eventType, f)
 }
-
