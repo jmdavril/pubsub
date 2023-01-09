@@ -63,9 +63,9 @@ func TestPublisher(t *testing.T) {
 	p.Subscribe(type1, fb)
 	p.Subscribe(type2, fc)
 
-	p.Push(e1a)
-	p.Push(e1b)
-	p.Push(e2)
+	p.Publish(e1a)
+	p.Publish(e1b)
+	p.Publish(e2)
 
 	// Assert
 	if a != 16 {
