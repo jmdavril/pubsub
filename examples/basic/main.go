@@ -5,48 +5,49 @@ import (
 	"log"
 )
 
-// service 1 pushes an event e with e.value = "hello", service 2 is the subscriber and prints e.value when receiving e
+////////////////////
+// 1. Define event
+////////////////////
+
+const EMPLOYEE_CREATED_TYPE = "employee_created"
+
+type EmployeeCreatedEvent struct {
+	Firstname string
+	Lastname  string
+	Email     string
+}
+
+func (EmployeeCreatedEvent) Type() pubsub.EventType {
+	return EMPLOYEE_CREATED_TYPE
+}
+
+//////////////////////
+// 2. Define callback
+//////////////////////
+
+func StartSubscription(r pubsub.Sub) {
+	eventHandler := func(e pubsub.Event) {
+		pce, _ := e.(EmployeeCreatedEvent)
+		log.Printf("Created employee '%s %s' with email '%s'", pce.Firstname, pce.Lastname, pce.Email)
+		return
+	}
+
+	r.Subscribe(EMPLOYEE_CREATED_TYPE, eventHandler)
+}
+
+////////////////////
+// 3. Publish event
+////////////////////
+
 func main() {
 	p := pubsub.NewPublisher()
+	StartSubscription(p)
 
-	s1 := &service1{
-		producer: p,
+	e := EmployeeCreatedEvent{
+		Firstname: "John",
+		Lastname:  "Doe",
+		Email:     "john.doe@email.com",
 	}
-
-	s2 := &service2{
-		register: p,
-	}
-
-	s2.startSubscription()
-	s1.pushValueHello()
+	p.Publish(e)
 }
 
-const eventType = "example.basic"
-
-type basicEvent struct {
-	value string
-}
-
-func (e basicEvent) Type() pubsub.EventType {
-	return eventType
-}
-
-type service1 struct {
-	producer pubsub.Producer
-}
-
-func (s service1) pushValueHello() {
-	s.producer.Push(basicEvent{value: "hello"})
-}
-
-type service2 struct {
-	register pubsub.Register
-}
-
-func (s service2) startSubscription() {
-	f := func(e pubsub.Event) {
-		be := e.(basicEvent)
-		log.Printf("Received message '%s'", be.value)
-	}
-	s.register.Subscribe(eventType, f)
-}
